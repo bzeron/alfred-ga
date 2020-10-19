@@ -8,14 +8,14 @@ import (
 	"go.etcd.io/bbolt"
 	"os"
 	"os/user"
+	"path"
 	"strings"
 	"time"
 )
 
 var (
-	storagePath = ".google-authenticator/config.db"
-	bucketName  = []byte("secret")
-	secretDB    *bbolt.DB
+	bucketName = []byte("secret")
+	secretDB   *bbolt.DB
 )
 
 type Items struct {
@@ -39,7 +39,16 @@ func generateCodeCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			filename := fmt.Sprintf("%s/%s", currentUser.HomeDir, storagePath)
+			filename := fmt.Sprintf("%s/%s", currentUser.HomeDir, ".google-authenticator/config.db")
+			_, err = os.Stat(path.Dir(filename))
+			if err != nil {
+				if os.IsNotExist(err) {
+					err = os.MkdirAll(path.Dir(filename), os.ModePerm)
+					if err != nil {
+						return err
+					}
+				}
+			}
 			secretDB, err = bbolt.Open(filename, 0666, nil)
 			if err != nil {
 				return err
@@ -66,7 +75,7 @@ func generateCodeCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Print(code)
+				fmt.Println(code)
 				return nil
 			})
 		},
