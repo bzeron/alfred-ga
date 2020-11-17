@@ -75,7 +75,7 @@ func generateCodeCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Println(code)
+				fmt.Print(code)
 				return nil
 			})
 		},
